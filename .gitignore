@@ -1,4 +1,4 @@
-  venv/
-  instance/
-  __pycache__/
-  *.db
+﻿venv/
+instance/
+__pycache__/
+*.db
