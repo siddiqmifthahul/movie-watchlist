@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="tabs" aria-label="Filter by status">
+  <a href="{{ url_for('index', genre=active_genre or None) }}" class="{{ '' if active_status else 'on' }}">All <span>{{ counts.values()|sum }}</span></a>
+  {% for key, label in statuses.items() %}
+    <a href="{{ url_for('index', status=key, genre=active_genre or None) }}" class="{{ 'on' if active_status == key else '' }}">{{ label }} <span>{{ counts[key] }}</span></a>
+  {% endfor %}
+  <form method="get" class="genre-filter">
+    {% if active_status %}<input type="hidden" name="status" value="{{ active_status }}">{% endif %}
+    <label class="sr" for="g">Genre</label>
+    <select id="g" name="genre" onchange="this.form.submit()">
+      <option value="">All genres</option>
+      {% for g in genres %}<option {{ 'selected' if g == active_genre }}>{{ g }}</option>{% endfor %}
+    </select>
+  </form>
+</nav>
+
+{% if movies %}
+<ul class="grid">
+  {% for m in movies %}
+  <li class="card s-{{ m.status }}">
+    <div class="meta">{{ m.genre }}{% if m.year %} · {{ m.year }}{% endif %}</div>
+    <h2>{{ m.title }}</h2>
+    {% if m.rating %}<div class="rating" title="Your rating">{{ m.rating }}<small>/10</small></div>{% endif %}
+    {% if m.notes %}<p class="notes">{{ m.notes }}</p>{% endif %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('set_status', movie_id=m.id) }}">
+        <label class="sr" for="s{{ m.id }}">Status</label>
+        <select id="s{{ m.id }}" name="status" onchange="this.form.submit()">
+          {% for key, label in statuses.items() %}<option value="{{ key }}" {{ 'selected' if m.status == key }}>{{ label }}</option>{% endfor %}
+        </select>
+      </form>
+      <a href="{{ url_for('edit_movie', movie_id=m.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('delete_movie', movie_id=m.id) }}" onsubmit="return confirm('Delete this movie?')">
+        <button class="link danger">Delete</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty">
+  <h2>Nothing here yet</h2>
+  <p>Add the first movie you want to watch.</p>
+  <a class="btn" href="{{ url_for('add_movie') }}">Add movie</a>
+</div>
+{% endif %}
+{% endblock %}
